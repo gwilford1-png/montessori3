@@ -157,7 +157,10 @@ export const INITIAL_ACTIVITIES: Activity[] = RAW_DATA.map(item => ({
   why_is_it_good: item.ben,
   dos: ["Ensure a quiet environment.", "Follow the child's lead."],
   donts: ["Don't rush the experience.", "Don't correct mistakes immediately."],
-  steps: generateSteps(item),
+    steps: generateSteps(item).map((s, i) => ({
+    ...s,
+    image_url: i === 0 ? (item.thumbnail || item.image || "") : s.image_url
+  })),
   items_required: item.item === "none" ? [] : [item.item],
   reference_link: item.ref,
   image_prompt: item.prompt
