@@ -43,19 +43,19 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onClick }) => {
       onClick={() => onClick(activity)}
       className="bg-white rounded-2xl flex flex-row items-center cursor-pointer group transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-slate-50 mb-4 mx-1"
     >
-     {/* Icon Area */}
+   {/* Icon Area */}
 <div className="p-4 shrink-0">
   <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-blue-50/50 transition-colors overflow-hidden">
-    {(activity as any).thumbnail || (activity as any).image ? (
+    {activity.steps?.[0]?.image_url ? (
       <img
-        src={(activity as any).thumbnail || (activity as any).image}
-        alt={(activity as any).title}
+        src={activity.steps[0].image_url}
+        alt={activity.title}
         className="w-full h-full object-cover"
       />
     ) : (
       <GeminiIllustration
-        title={(activity as any).title}
-        category={(activity as any).category ?? (activity as any).cat}
+        title={activity.title}
+        category={activity.category}
         className="w-full h-full scale-75"
       />
     )}
