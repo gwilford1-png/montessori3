@@ -23,6 +23,13 @@ const getAgeTagStyle = (age: string) => {
 };
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onClick }) => {
+  console.log(
+  "ACTIVITY CARD:",
+  activity.title,
+  (activity as any).thumbnail,
+  (activity as any).image
+);
+
   const [isComplete, setIsComplete] = useState(false);
   
   const itemsText = activity.items_required && activity.items_required.length > 0
