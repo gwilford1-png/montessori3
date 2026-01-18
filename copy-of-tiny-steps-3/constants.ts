@@ -10,7 +10,8 @@ export const AGE_FILTERS = ["All", ...AGE_ORDER];
  */
 const RAW_DATA: any[] = [
   // 0-3 MONTHS (Visual/Auditory/Tactile Foundations)
-  { id: 1, title: "Munari Mobile TEST", cat: "Visual", age: "0-3 Months", act: "Observe high-contrast shapes.", desc: "Mathematically-balanced black and white geometric shapes.", ben: "Builds early visual concentration.", item: "Munari Mobile", ref: "https://amshq.org/", prompt: "Black and white shapes.", thumbnail: "/images/Munari_Mobile.png",
+  { id: 1, title: "Munari Mobile", cat: "Visual", age: "0-3 Months", act: "Observe high-contrast shapes.", desc: "Mathematically-balanced black and white geometric shapes.", ben: "Builds early visual concentration.", item: "Munari Mobile", ref: "https://amshq.org/", prompt: "Black and white shapes.", thumbnail: "/images/Munari_Mobile.png",
+image: "/images/Munari_Mobile.png",
  },
   { id: 2, title: "Melodic Anchoring", cat: "Auditory", age: "0-3 Months", act: "Listen to a soothing anchor.", desc: "A consistent, gentle melody used for acoustic comfort.", ben: "Builds auditory tracking.", item: "Wooden music box", ref: "https://amshq.org/", prompt: "Music box." },
   { id: 3, title: "Octahedron Mobile", cat: "Visual", age: "0-3 Months", act: "3D primary color study.", desc: "Three metallic 3D shapes in primary colors.", ben: "Develops depth perception.", item: "Octahedron Mobile", ref: "https://montessoriguide.org/", prompt: "Octahedrons." },
