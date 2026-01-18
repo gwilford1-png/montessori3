@@ -38,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: copy-of-tiny-steps-3/dist
 
   deploy:
     needs: build
