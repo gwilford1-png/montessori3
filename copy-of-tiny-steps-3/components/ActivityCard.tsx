@@ -48,7 +48,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onClick }) => {
   <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-blue-50/50 transition-colors overflow-hidden">
     {activity.steps?.[0]?.image_url ? (
       <img
-        src={activity.steps[0].image_url}
+        src={`${import.meta.env.BASE_URL}${activity.steps[0].image_url.replace(/^\//, '')}`}
         alt={activity.title}
         className="w-full h-full object-cover"
       />
