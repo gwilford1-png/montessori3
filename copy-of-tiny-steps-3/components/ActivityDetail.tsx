@@ -1,243 +1,270 @@
-import React from 'react';
+
+import React, { useState, useMemo, useEffect } from 'react';
 import { Activity } from '../types';
 import GeminiIllustration from './GeminiIllustration';
 import { 
   ArrowLeft, 
-  Tag, 
-  Brain, 
-  Heart, 
-  Activity as ActivityIcon, 
-  Sparkles, 
-  ShieldAlert,
-  ChevronRight,
-  MessageCircle,
-  Wrench,
-  ExternalLink,
-  BookOpen,
-  Check,
-  ShoppingBag,
-  Package,
-  ListOrdered
+  ShoppingBag, 
+  ArrowRight, 
+  Share2, 
+  ChevronDown, 
+  Clock, 
+  Wrench, 
+  Leaf 
 } from 'lucide-react';
 
 interface ActivityDetailProps {
   activity: Activity;
-  onBack: () => void;
-  onNext?: () => void;
+  activities?: Activity[];
+  onSelectActivity?: (activity: Activity) => void;
 }
 
-const CategoryBadge = ({ category }: { category: string }) => {
-  let bgColor = "bg-slate-100";
-  let textColor = "text-slate-500";
-  let Icon = Tag;
+interface ActivityDetailComponentProps extends ActivityDetailProps {
+  onBack: () => void;
+}
 
-  switch (category) {
-    case 'Physical': 
-      bgColor = "bg-blue-50";
-      textColor = "text-blue-600";
-      Icon = ActivityIcon;
-      break;
-    case 'Cognitive':
-      bgColor = "bg-indigo-50";
-      textColor = "text-indigo-600";
-      Icon = Brain;
-      break;
-    case 'Social':
-      bgColor = "bg-rose-50";
-      textColor = "text-rose-600";
-      Icon = Heart;
-      break;
-    case 'Sensory':
-    case 'Visual':
-    case 'Auditory':
-    case 'Tactile':
-      bgColor = "bg-cyan-50";
-      textColor = "text-cyan-600";
-      Icon = Sparkles;
-      break;
-    case 'Language':
-      bgColor = "bg-violet-50";
-      textColor = "text-violet-600";
-      Icon = MessageCircle;
-      break;
-    case 'Practical Life':
-      bgColor = "bg-slate-100";
-      textColor = "text-slate-600";
-      Icon = Wrench;
-      break;
-  }
+const ActivityDetail: React.FC<ActivityDetailComponentProps> = ({ 
+  activity, 
+  onBack, 
+  activities = [], 
+  onSelectActivity 
+}) => {
+  const [isPauseExpanded, setIsPauseExpanded] = useState(false);
+
+  // Scroll to top when activity changes
+  useEffect(() => {
+    const container = document.querySelector('.activity-detail-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activity.id]);
+
+  const primaryMaterial = activity.materials[0];
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `TinySteps: ${activity.title}`,
+      text: `Check out this developmental activity for your little one: ${activity.title}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.debug('Sharing failed', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+      } catch (err) {
+        alert('Could not copy link.');
+      }
+    }
+  };
+
+  const nextActivity = useMemo(() => {
+    const currentIndex = activities.findIndex(a => a.id === activity.id);
+    if (currentIndex !== -1 && currentIndex < activities.length - 1) {
+      return activities[currentIndex + 1];
+    }
+    return null;
+  }, [activities, activity.id]);
 
   return (
-    <span className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest ${bgColor} ${textColor}`}>
-      <Icon size={14} strokeWidth={3} />
-      {category}
-    </span>
-  );
-};
-
-const ActivityDetail: React.FC<ActivityDetailProps> = ({ activity, onBack, onNext }) => {
-  return (
-    <div className="animate-in slide-in-from-right-8 duration-500 bg-[#F8FAFC] min-h-screen text-slate-800 pb-20">
-      <nav className="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-4 h-16 flex items-center justify-between">
+    <div className="activity-detail-container fixed inset-0 z-[100] bg-white overflow-y-auto animate-in slide-in-from-bottom duration-500">
+      {/* Navigation Header */}
+      <nav className="sticky top-0 z-[110] bg-white/95 backdrop-blur-md border-b border-slate-100 px-6 h-14 flex items-center justify-between">
         <button 
           onClick={onBack}
-          className="flex items-center justify-center w-10 h-10 rounded-2xl bg-white text-slate-900 shadow-sm hover:bg-slate-50 transition-all border border-slate-100"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-all active:scale-95"
         >
-          <ArrowLeft size={20} strokeWidth={2.5} />
+          <ArrowLeft size={16} strokeWidth={2.5} />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Back</span>
         </button>
-        
-        <div className="flex flex-col items-center">
-          <span className="text-[10px] font-bold text-[#007AFF] uppercase tracking-widest">{activity.filter_tag}</span>
+        <div className="hidden sm:block">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">Activity Guide</span>
         </div>
-
-        {onNext ? (
-          <button 
-            onClick={onNext}
-            className="flex items-center gap-2 px-5 h-10 bg-[#007AFF] rounded-2xl text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-100 active:scale-95"
-          >
-            <span className="text-[10px] font-bold uppercase tracking-widest">Next</span>
-            <ChevronRight size={16} strokeWidth={3} />
-          </button>
-        ) : <div className="w-10" />}
+        <div className="w-8 sm:w-0"></div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 pt-10">
-        {/* Header Section */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            <CategoryBadge category={activity.category} />
-            <div className="h-px w-8 bg-slate-200"></div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Scientific Milestone</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6 leading-tight">
-            {activity.title}
-          </h1>
-
-          <p className="text-slate-500 text-xl leading-relaxed font-sans font-medium mb-10">
-            {activity.description}
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div className="p-6 bg-white rounded-3xl shadow-sm border border-slate-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
-                    <Check size={16} strokeWidth={3} />
-                  </div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Objective</p>
-                </div>
-                <p className="text-base text-slate-700 font-medium leading-relaxed">{activity.what_is_it}</p>
-             </div>
-             <div className="p-6 bg-white rounded-3xl shadow-sm border border-slate-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-indigo-50 rounded-lg text-indigo-500">
-                    <Sparkles size={16} strokeWidth={3} />
-                  </div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Outcome</p>
-                </div>
-                <p className="text-base text-slate-700 font-medium leading-relaxed italic">{activity.why_is_it_good}</p>
-             </div>
-          </div>
-        </div>
-
-        {/* Hero Visual */}
-        <div className="relative mb-16">
-          <div className="aspect-[16/9] rounded-[3rem] overflow-hidden bg-white shadow-xl border border-white">
+      <div className="max-w-xl mx-auto px-6 pt-6 pb-20">
+        {/* Visual Header */}
+        <div className="mb-6">
+          <div className="aspect-[4/3] rounded-[1.5rem] overflow-hidden bg-sage-50/40 border border-slate-100 mb-2">
             <GeminiIllustration 
               title={activity.title}
               category={activity.category}
-              className="w-full h-full opacity-80"
+              className="w-full h-full opacity-80 scale-90"
             />
-            <div className="absolute bottom-6 left-6 bg-slate-900/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-3 text-white">
-              <ListOrdered size={16} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Step-by-step guide</span>
+          </div>
+          <p className="text-[9px] text-slate-400 text-center font-medium uppercase tracking-widest italic opacity-60">
+            Observation is the foundation of growth.
+          </p>
+        </div>
+
+        {/* Info & Category Icons */}
+        <div className="flex flex-col gap-3 mb-6">
+          <span className="text-[10px] font-bold text-[#007AFF] uppercase tracking-[0.2em]">
+            {activity.filter_tag}
+          </span>
+          <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar whitespace-nowrap">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/70 text-blue-800 border border-blue-100 rounded-full text-[9px] font-bold uppercase tracking-wide">
+              <Clock size={12} strokeWidth={2.5} className="text-[#007AFF]" /> 2–5 min
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sage-50/70 text-sage-800 border border-sage-100 rounded-full text-[9px] font-bold uppercase tracking-wide">
+              <Wrench size={12} strokeWidth={2.5} className="text-sage-600" /> 1m Setup
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-full text-[9px] font-bold uppercase tracking-wide">
+              <Leaf size={12} strokeWidth={2.5} className="text-slate-400" /> Best calm
             </div>
           </div>
         </div>
 
-        {/* Instructions Sequence */}
-        <div className="relative space-y-12 mb-20 px-4">
-          <div className="absolute left-[27px] top-4 bottom-4 w-1 bg-slate-100 rounded-full"></div>
-          
-          {(activity.steps && activity.steps.length > 0 ? activity.steps : [{ caption: activity.what_is_it }]).map((step, idx) => (
-            <div key={idx} className="relative flex gap-10 items-start">
-              <div className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-slate-100 text-[#007AFF] flex items-center justify-center text-lg font-bold shadow-sm z-10 transition-colors hover:border-blue-100">
-                {idx + 1}
-              </div>
-              <div className="flex-1 pt-3">
-                <p className="text-slate-700 text-xl leading-relaxed font-sans font-medium">
-                  {step.caption}
-                </p>
-              </div>
-            </div>
-          ))}
+        {/* Title & One-sentence Reassurance */}
+        <h1 className="text-3xl font-display font-bold text-slate-900 leading-tight mb-2.5">
+          {activity.title}
+        </h1>
+        <div className="mb-10 border-l-2 border-sage-200 pl-4 py-0.5">
+          <p className="text-slate-500 text-base italic leading-relaxed font-medium">
+            "{activity.reassurance}"
+          </p>
         </div>
 
-        {/* Items & Precautions Grid */}
-        <div className="grid grid-cols-1 gap-6 mb-16">
-          {activity.items_required && activity.items_required.length > 0 && (
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-3">
-                <Package size={20} className="text-indigo-500" />
-                Materials Needed
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {activity.items_required.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:bg-white hover:border-blue-100 transition-all">
-                    <span className="text-sm font-bold text-slate-700 truncate mr-4">{item}</span>
-                    <a 
-                      href={`https://www.amazon.com/s?k=${encodeURIComponent(item)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm"
-                    >
-                      <ShoppingBag size={16} />
-                    </a>
-                  </div>
-                ))}
+        {/* Content Flow */}
+        <div className="space-y-10">
+          {/* Objective & Outcome Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <section>
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Objective</h3>
+              <p className="text-slate-700 font-medium leading-relaxed text-sm">
+                {activity.objective}
+              </p>
+            </section>
+            <section>
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Outcome</h3>
+              <p className="text-slate-700 font-medium leading-relaxed text-sm">
+                {activity.outcome}
+              </p>
+            </section>
+          </div>
+
+          {/* Why Matters Section */}
+          <section className="bg-sage-50/40 p-6 rounded-2xl border border-sage-100/50">
+            <h3 className="text-[10px] font-bold text-sage-600 uppercase tracking-widest mb-3">Why This Matters</h3>
+            <p className="text-slate-600 leading-relaxed text-base">
+              {activity.why_matters}
+            </p>
+          </section>
+
+          {/* BUY ITEM - PRIMARY CTA WITH AFFILIATE DISCLOSURE */}
+          {primaryMaterial && (
+            <div className="py-2 flex flex-col items-center">
+              <a 
+                href={`https://www.amazon.com/s?k=${encodeURIComponent(primaryMaterial + ' montessori')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-center gap-3 w-full min-h-[56px] px-8 py-4 bg-[#007AFF] text-white rounded-2xl text-[13px] font-bold uppercase tracking-[0.05em] hover:bg-blue-600 transition-all shadow-[0_12px_24px_-8px_rgba(0,122,255,0.4)] active:scale-[0.98] outline-none"
+              >
+                <ShoppingBag size={18} strokeWidth={2.5} />
+                <span className="pt-0.5">Buy Item</span>
+                <ArrowRight size={16} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
+              </a>
+              <div className="mt-4 px-2 space-y-1.5 text-center">
+                <p className="text-[9px] text-slate-400 uppercase tracking-widest opacity-60 font-medium">
+                  A carefully selected material for this stage.
+                </p>
+                <p className="text-[8px] text-slate-400 leading-relaxed max-w-[280px] mx-auto italic opacity-50">
+                  This link may be an affiliate link. We only recommend materials that align with Montessori principles and your child’s current stage.
+                </p>
               </div>
             </div>
           )}
 
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-3">
-              <ShieldAlert size={20} className="text-rose-500" />
-              Safety Instructions
-            </h3>
-            <div className="space-y-3">
-              {activity.donts.map((item, idx) => (
-                <div key={idx} className="flex items-start gap-4 p-4 bg-rose-50/50 rounded-2xl border border-rose-100">
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-2.5 shrink-0"></div>
-                  <p className="text-sm font-medium text-slate-600 leading-relaxed">{item}</p>
+          {/* Preparation & Observation List */}
+          <section>
+            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5">Preparation & Observation</h3>
+            <div className="space-y-4 relative">
+              {activity.steps.map((step, idx) => (
+                <div key={idx} className="flex gap-4 items-start relative">
+                  {idx < activity.steps.length - 1 && (
+                    <div className="absolute left-[13.5px] top-7 w-[1px] h-[calc(100%+4px)] bg-slate-100" aria-hidden="true" />
+                  )}
+                  <div className="relative z-10 shrink-0 w-7 h-7 rounded-full bg-white border border-sage-200 text-sage-600 flex items-center justify-center text-[10px] font-bold shadow-sm">
+                    {idx + 1}
+                  </div>
+                  <p className="text-slate-700 text-base leading-relaxed pt-0.5">
+                    {step.caption}
+                  </p>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+          </section>
 
-        {/* Footer Reference */}
-        {activity.reference_link && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-10 bg-slate-900 rounded-[3rem] text-white shadow-2xl">
-            <div className="flex items-center gap-5">
-              <div className="p-4 bg-white/10 rounded-2xl">
-                <BookOpen size={28} className="text-blue-400" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Reference Material</span>
-                <span className="text-lg font-display font-bold">{new URL(activity.reference_link).hostname}</span>
+          {/* Lightweight Collapsible Accordion */}
+          <section className={`border border-slate-100 rounded-xl overflow-hidden transition-all duration-300 ${isPauseExpanded ? 'bg-sage-50/20 shadow-sm' : 'bg-white'}`}>
+            <button 
+              onClick={() => setIsPauseExpanded(!isPauseExpanded)}
+              className="w-full px-5 py-4 flex items-center justify-between group"
+            >
+              <h3 className="text-[11px] font-bold text-slate-700 uppercase tracking-widest pt-0.5">When to Pause</h3>
+              <ChevronDown 
+                size={16} 
+                strokeWidth={3} 
+                className={`text-slate-300 transition-transform duration-300 ${isPauseExpanded ? 'rotate-180' : ''}`} 
+              />
+            </button>
+            <div className={`transition-all duration-300 ease-in-out ${isPauseExpanded ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
+              <div className="px-5 pb-5 pt-1">
+                <p className="text-slate-600 text-base leading-relaxed">
+                  {activity.when_to_pause}
+                </p>
               </div>
             </div>
-            <a 
-              href={activity.reference_link} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto px-10 py-4 bg-white text-slate-900 rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+          </section>
+
+          {/* Next Activity Preview */}
+          {nextActivity && onSelectActivity && (
+            <section className="pt-8 border-t border-slate-50">
+              <div 
+                onClick={() => onSelectActivity(nextActivity)}
+                className="bg-slate-50/40 rounded-[1.5rem] p-5 border border-slate-100 flex items-center gap-4 cursor-pointer hover:bg-white hover:border-[#007AFF]/20 transition-all group"
+              >
+                <div className="w-12 h-12 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
+                  <GeminiIllustration 
+                    title={nextActivity.title}
+                    category={nextActivity.category}
+                    className="scale-[0.4]"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[8px] font-bold text-[#007AFF] uppercase tracking-widest mb-0.5 block opacity-70">Next Guide</span>
+                  <h4 className="text-sm font-display font-bold text-slate-900 truncate">
+                    {nextActivity.title}
+                  </h4>
+                </div>
+                <ArrowRight size={14} className="text-[#007AFF] group-hover:translate-x-1 transition-transform" />
+              </div>
+            </section>
+          )}
+
+          {/* Share with a Mum */}
+          <div className="flex flex-col items-center pt-8 border-t border-slate-50">
+            <button 
+              onClick={handleShare}
+              className="flex items-center gap-3 px-8 py-3 bg-slate-50 border border-slate-200 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all active:scale-95 group"
             >
-              Learn More
-              <ExternalLink size={14} strokeWidth={3} />
-            </a>
+              <Share2 size={16} strokeWidth={2.5} className="opacity-60" />
+              <div className="flex flex-col items-start leading-tight pt-0.5">
+                <span className="text-[11px] font-bold uppercase tracking-[0.1em]">Share with a Mum</span>
+                <span className="text-[8px] font-medium opacity-50 uppercase tracking-widest">Send this activity</span>
+              </div>
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
